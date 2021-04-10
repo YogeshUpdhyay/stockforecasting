@@ -9,7 +9,6 @@ def create_app():
         title="Stock Forecasting",
         assets_folder="assets"
     )
-
     return app
 
 app = create_app()

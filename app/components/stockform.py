@@ -10,7 +10,7 @@ from .plot import alerts
 
 stock_form = dbc.Row(
     [
-        dbc.Col(dbc.Input(placeholder="TICKR", id="tickr-input"), align="center"),
+        dbc.Col(dbc.Input(placeholder="TICKR", id="tickr-input", className="mr-3"), align="center", width=3),
 
         dbc.Col(dcc.DatePickerRange(
             id='stock-date-picker-range',
@@ -19,15 +19,11 @@ stock_form = dbc.Row(
             initial_visible_month=date.today()
         )),
         
-        dbc.Col(
-            dbc.Button("Filter", color="primary", className="ml-2", id="form-submit"),
-            width="auto",
-            align="center"
-        ),
+        dbc.Col(dbc.Button("Filter", color="primary", id="form-submit"), width="3", align="center"),
     ],
     no_gutters=False,
-    className="ml-auto flex-nowrap mt-3 mt-md-0",
-    align="end"
+    className="ml-auto flex-nowrap mt-md-0",
+    align="end",
 )
 
 @app.callback(
