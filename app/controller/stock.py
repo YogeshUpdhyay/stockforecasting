@@ -28,9 +28,9 @@ class Stock:
 
     def get_graphs(self):
         if self.get_data():
-            close_graph = self.close_graph()
+            open_close_graph = self.open_close_graph()
             moving_avg_graph = self.moving_average_graph()
-            return close_graph, moving_avg_graph
+            return open_close_graph, moving_avg_graph
         else:
             raise ConnectionError
 
@@ -48,11 +48,12 @@ class Stock:
             print(e)
             return False
 
-    def close_graph(self):
+    def open_close_graph(self):
         fig = px.line(
-            x=self.df['Date'],
-            y=self.df['Close'],
-            title="Close Price"
+            self.df,
+            x="Date",
+            y=["Close", "Open"],
+            title="Open Close Price"
         )
         return fig
 

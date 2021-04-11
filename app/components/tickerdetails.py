@@ -6,7 +6,7 @@ def generate_ticker_details(
 ): 
     ticker_detail = dbc.Container([
         dbc.Row([
-            dbc.Col(html.Img(src=info["logo_url"], height="75px"), width=2, align="center"),
+            dbc.Col(html.Img(src=info["logo_url"], height="75px", width="75px"), width=2, align="center"),
             dbc.Col(html.H2(info["name"], className="display-3"), width=10),
         ],
         no_gutters=True
