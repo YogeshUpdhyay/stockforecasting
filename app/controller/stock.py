@@ -5,14 +5,15 @@ import plotly.express as px
 from datetime import date, timedelta
 
 class Stock:
-    def __init__(self, ticker, end_date: str = str(date.today()), start_date: str = str(date.today() - timedelta(days = 90))):
+    def __init__(self, ticker, start_date: str = str(date.today()  - timedelta(days = 90)), end_date: str = str(date.today())):
         self.ticker = ticker
         self.start_date = start_date
         self.end_date = end_date
 
     def get_info(self):
         try:
-            info = yf.Ticker(self.ticker)
+            stock = yf.Ticker(self.ticker)
+            info = stock.info
             info = {
                 "name": info['longName'],
                 "description": info["longBusinessSummary"],
@@ -43,6 +44,9 @@ class Stock:
             df.reset_index(inplace=True)
             self.df = df
             return True
+        except Exception as e:
+            print(e)
+            return False
 
     def close_graph(self):
         fig = px.line(
@@ -61,10 +65,3 @@ class Stock:
         )
         return fig
     
-
-
-
-
-stock = Stock("AAPL")
-# stock.get_info()
-print(stock.moving_average_graph())

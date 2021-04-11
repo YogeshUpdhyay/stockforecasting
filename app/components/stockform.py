@@ -1,12 +1,14 @@
-import datetime
-from datetime import date
+from datetime import date, timedelta
 import dash_bootstrap_components as dbc
 import dash_html_components as html
 import dash_core_components as dcc
+from dash.exceptions import PreventUpdate
 from dash.dependencies import Input, Output, State
 
 from ..app import app
-from .plot import alerts
+from .tickerdetails import generate_ticker_details
+from .forecastform import forecast_form
+from ..controller.stock import Stock
 
 stock_form = dbc.Row(
     [
@@ -14,7 +16,7 @@ stock_form = dbc.Row(
 
         dbc.Col(dcc.DatePickerRange(
             id='stock-date-picker-range',
-            min_date_allowed=date(1995, 8, 5),
+            min_date_allowed=(date.today() - timedelta(days = 3*365)),
             max_date_allowed=date.today(),
             initial_visible_month=date.today()
         )),
@@ -27,7 +29,11 @@ stock_form = dbc.Row(
 )
 
 @app.callback(
-    Output("my-output", "children"),
+    # Output("ticker-detail", "children"),
+    [
+        Output("ticker-detail", "children"),
+        Output("ticker-graph", "children")
+    ],
     [Input("form-submit", "n_clicks")],
     [
         State("tickr-input", "value"),
@@ -37,5 +43,27 @@ stock_form = dbc.Row(
 )
 def form_submit(clicks, tickr, start_date, end_date):
     if clicks:
-        return alerts
+        if tickr:
+            if start_date and end_date:
+                stock = Stock(tickr, start_date, end_date)
+                info = stock.get_info()
+                # moving average graph to be implemented later with forecasting form
+                close_graph, moving_avg_graph = stock.get_graphs()
+                return [generate_ticker_details(info), forecast_form], [dcc.Graph(figure=close_graph)]
+            elif start_date:
+                stock = Stock(tickr, start_date)
+                info = stock.get_info()
+                close_graph, moving_avg_graph = stock.get_graphs()
+                return [generate_ticker_details(info), forecast_form], [dcc.Graph(figure=close_graph)]
+            else:
+                stock = Stock(tickr)
+                info = stock.get_info()
+                close_graph, moving_avg_graph = stock.get_graphs()
+                return [generate_ticker_details(info), forecast_form], [dcc.Graph(figure=close_graph)]
+        else:
+            return dbc.Alert("No TICKER found!!", color="primary", dismissable=True), None
+    else:
+        raise PreventUpdate
+
+
 
