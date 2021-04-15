@@ -9,6 +9,8 @@ class Stock:
         self.ticker = ticker
         self.start_date = start_date
         self.end_date = end_date
+        print(start_date)
+        print(end_date)
 
     def get_info(self):
         try:
@@ -42,6 +44,7 @@ class Stock:
                 end = self.end_date
             )
             df.reset_index(inplace=True)
+            print(df.shape)
             self.df = df
             return True
         except Exception as e:

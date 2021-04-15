@@ -3,8 +3,6 @@ import dash_bootstrap_components as dbc
 import dash_html_components as html
 import dash_core_components as dcc
 
-from ..controller import callbacks
-
 stock_form = dbc.Row(
     [
         dbc.Col(dbc.Input(placeholder="TICKR", id="tickr-input", className="mr-3"), align="center", width=3),
