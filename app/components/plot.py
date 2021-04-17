@@ -9,3 +9,11 @@ def generate_ticker_graph(graph):
         align="center"
     )
     return ticker_graph
+
+def generate_forecast_graph(graph):
+    forecast_graph = dbc.Col(
+        dcc.Graph(figure=graph),
+        width=7,
+        align="center"
+    )
+    return forecast_graph

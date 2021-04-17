@@ -6,22 +6,20 @@ from dash.dependencies import Input, Output, State
 from ..app import app
 from ..components.tickerdetails import generate_ticker_details
 from ..components.plot import generate_ticker_graph
+from ..components.forecastdetail import get_forecast_detail
 from .stock import Stock
 from .model import Forecasting
 
 
-def get_ticker_details(tickr, start_date, end_date):
+def get_stock(tickr, start_date, end_date):
     if start_date and end_date:
         stock = Stock(tickr, start_date, end_date)
     elif start_date:
         stock = Stock(tickr, start_date)
     else:
         stock = Stock(tickr)
-    
-    info = stock.get_info()
-    ticker_detail = generate_ticker_details(info)
 
-    return ticker_detail
+    return stock
 
 @app.callback(
     Output("main-view", "children"),
@@ -44,7 +42,10 @@ def form_submit(stock_click, forecast_click, tickr, start_date, end_date, foreca
 
     if stock_click and trigger == "form-submit":
         if tickr:
-            ticker_detail = get_ticker_details(tickr, start_date, end_date)
+
+            stock = get_stock(tickr, start_date, end_date)
+            info = stock.get_info()
+            ticker_detail = generate_ticker_details(info)
 
             open_close_graph, moving_avg_graph = stock.get_graphs()
             ticker_graph = generate_ticker_graph(open_close_graph)
@@ -53,14 +54,18 @@ def form_submit(stock_click, forecast_click, tickr, start_date, end_date, foreca
         else:
             return dbc.Alert("No TICKER found!!", color="primary", dismissable=True)
     elif forecast_click and trigger == "forecast-submit":
-        print("here")
         if tickr:
-            ticker_detail = get_ticker_details(tickr, start_date, end_date)
+
+            stock = get_stock(tickr, start_date, end_date)
+            info = stock.get_info()
+            ticker_detail = generate_ticker_details(info)
 
             forecaster = Forecasting(tickr)
             dates, y_pred, accuracy = forecaster.forecast(forecast_days)
+            graph = forecaster.get_forecast_graph(dates, y_pred)
+            forecast_detail = get_forecast_detail(accuracy, graph)
 
-            return dbc.Row([ticker_detail, ticker_graph], align="center", no_gutters=True)
+            return dbc.Row([ticker_detail, forecast_detail], align="center", no_gutters=True)
         else:
             return dbc.Alert("No TICKER found!!", color="primary", dismissable=True)
     else:

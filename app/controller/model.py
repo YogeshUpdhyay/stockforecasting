@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 from sklearn.svm import SVR
-import plotly.express as px
+import plotly.graph_objects as go
 from datetime import date, timedelta, datetime
 from sklearn.metrics import mean_absolute_error
 from sklearn.model_selection import train_test_split, GridSearchCV
@@ -50,10 +50,8 @@ class Forecasting:
         return best_params
 
     def train(self):
-        print("Preprocessing Data")
         x_train, x_test, y_train, y_test = self.preprocess()
 
-        print("Tuning Parameters")
         best_params = self.tune_hyperparamters(x_train, y_train)
 
         model = SVR(
@@ -64,7 +62,6 @@ class Forecasting:
             max_iter=-1
         )
 
-        print("Training Model")
         model.fit(x_train, y_train)
 
         accuracy = self.validate(x_test, y_test, model)
@@ -81,94 +78,34 @@ class Forecasting:
         model, accuracy = self.train()
 
         # predicting the prices for the upcoming days
-        x_test = np.arange(90, 90 + int(n_days), 1)
-        dates = [(date.today() + timedelta(day)) for day in x_test.tolist()]
+        offset = len(self.data["Date"])
+        x_test = np.arange(offset, offset + int(n_days), 1)
+        dates = [(date.today() + timedelta(days = day)) for day in range(0, int(n_days)+1)]
         x_test = x_test.reshape(-1, 1)
         y_pred = model.predict(x_test)
 
         return dates, y_pred, accuracy
 
+    def get_forecast_graph(self, dates, y_pred):
+        fig = go.Figure()
 
+        fig.add_trace(go.Scatter(
+            x=self.data["Date"], y=self.data["Close"],
+            name='Actual',
+            mode='markers',
+            marker_color='rgba(152, 0, 0, .8)'
+        ))
 
+        fig.add_trace(go.Scatter(
+            x=dates, y=y_pred,
+            name='Predicted',
+            marker_color='rgba(255, 182, 193, .9)'
+        ))
 
+        # Set options common to all traces with fig.update_traces
+        fig.update_traces(mode='markers', marker_line_width=2, marker_size=5)
+        fig.update_layout(title='Predicted Graph',
+                        yaxis_zeroline=False, xaxis_zeroline=False, height=500, width=800)
 
+        return fig
 
-
-
-def prediction(stock, n_days):
-
-    df = yf.download(stock, period='60d')
-    df.reset_index(inplace=True)
-    df['Day'] = df.index
-    print(df)
-
-    # days = list()
-    # for i in range(len(df.Day)):
-    #     days.append([i])
-
-    # # Splitting the dataset
-
-    # X = days
-    # Y = df[['Close']]
-
-    # x_train, x_test, y_train, y_test = train_test_split(X,
-    #                                                     Y,
-    #                                                     test_size=0.1,
-    #                                                     shuffle=False)
-
-    # gsc = GridSearchCV(
-    #     estimator=SVR(kernel='rbf'),
-    #     param_grid={
-    #         'C': [0.001, 0.01, 0.1, 1, 100, 1000],
-    #         'epsilon': [
-    #             0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5, 1, 5, 10,
-    #             50, 100, 150, 1000
-    #         ],
-    #         'gamma': [0.0001, 0.001, 0.005, 0.1, 1, 3, 5, 8, 40, 100, 1000]
-    #     },
-    #     cv=5,
-    #     scoring='neg_mean_absolute_error',
-    #     verbose=0,
-    #     n_jobs=-1)
-
-    # y_train = y_train.values.ravel()
-    # y_train
-    # grid_result = gsc.fit(x_train, y_train)
-    # best_params = grid_result.best_params_
-    # best_svr = SVR(kernel='rbf',
-    #                C=best_params["C"],
-    #                epsilon=best_params["epsilon"],
-    #                gamma=best_params["gamma"],
-    #                max_iter=-1)
-
-    # rbf_svr = best_svr
-
-    # rbf_svr.fit(x_train, y_train)
-
-    # output_days = list()
-    # for i in range(1, n_days):
-    #     output_days.append([i + x_test[-1][0]])
-
-    # dates = []
-    # current = date.today()
-    # for i in range(n_days):
-    #     current += timedelta(days=1)
-    #     dates.append(current)
-
-    # fig = go.Figure()
-    # fig.add_trace(
-    #     go.Scatter(
-    #         x=dates,  # np.array(ten_days).flatten(), 
-    #         y=rbf_svr.predict(output_days),
-    #         mode='lines+markers',
-    #         name='data'))
-    # fig.update_layout(
-    #     title="Predicted Close Price of next " + str(n_days - 1) + " days",
-    #     xaxis_title="Date",
-    #     yaxis_title="Closed Price",
-    #     # legend_title="Legend Title",
-    # )
-
-    # return fig
-
-# prediction("AAPL", 5)
